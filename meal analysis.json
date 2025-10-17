@@ -1,0 +1,176 @@
+{
+  "name": "meal analysis",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mealai",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -256,
+        -16
+      ],
+      "id": "d1f6416c-1489-4542-bd6e-9bd070a1945f",
+      "name": "Webhook",
+      "webhookId": "37220b85-34ce-4a85-b176-290b90d4c8c5"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Analyze the dish in this image and provide a detailed nutritional breakdown,\nincluding estimated calories, macronutrients (protein, carbs, fats), and any\nnotable micronutrients or health considerations.\n",
+        "hasOutputParser": true,
+        "options": {
+          "passthroughBinaryImages": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -48,
+        -16
+      ],
+      "id": "49568614-83a2-4bd8-96e0-f2c4ca302ace",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -144,
+        160
+      ],
+      "id": "21b26fbe-c39e-4b99-a248-8733d307705c",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "TPVKYmaZDPpNZ3P3",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n \"status\": \"success\",\n \"food\": [\n {\n \"name\": \"Grilled Chicken Breast\",\n \"quantity\": \"150g\",\n \"calories\": 240,\n \"protein\": 45,\n \"carbs\": 0,\n \"fat\": 5\n },\n {\n \"name\": \"Steamed Broccoli\",\n \"quantity\": \"100g\",\n \"calories\": 35,\n \"protein\": 3,\n \"carbs\": 7,\n \"fat\": 0\n }\n ],\n \"total\": {\n \"calories\": 275,\n \"protein\": 48,\n \"carbs\": 7,\n \"fat\": 5\n }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        208,
+        144
+      ],
+      "id": "a2089d51-d82d-41a2-b916-d25856afedb1",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  json: $json.output\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        -16
+      ],
+      "id": "65967338-6cd3-4e5c-9ebd-2870617e6905",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.food }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        512,
+        -16
+      ],
+      "id": "8f4d7327-e9d2-48e1-8e16-ebb4b853f1b7",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "3e12ae8e-7d6d-4264-8f58-b210d07ebc50",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "34c9aad3f0ee73c359b4cd9ccf1507658a0543fdcec0b48ccc26d7ca12cee7a0"
+  },
+  "id": "lSTVJn6qXqo4YeX5",
+  "tags": []
+}
